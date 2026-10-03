@@ -1,0 +1,13 @@
+.git
+.gitignore
+.env
+.env.*
+node_modules
+npm-debug.log*
+tests/
+coverage/
+*.md
+.vscode/
+.idea/
+docker-compose*.yml
+nginx/

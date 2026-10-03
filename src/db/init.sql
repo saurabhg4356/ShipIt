@@ -1,0 +1,12 @@
+-- Database initialization schema for ShipIt
+CREATE TABLE IF NOT EXISTS links (
+  id SERIAL PRIMARY KEY,
+  original_url TEXT NOT NULL,
+  short_code VARCHAR(16) NOT NULL UNIQUE,
+  click_count INTEGER DEFAULT 0 NOT NULL,
+  last_clicked_at TIMESTAMP WITH TIME ZONE NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_links_short_code ON links(short_code);
