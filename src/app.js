@@ -4,6 +4,9 @@ const cors = require('cors');
 const morgan = require('morgan');
 const config = require('./config/env');
 const healthRoutes = require('./routes/healthRoutes');
+const linkRoutes = require('./routes/linkRoutes');
+const redirectRoutes = require('./routes/redirectRoutes');
+const { apiLimiter } = require('./middleware/rateLimiter');
 const { notFoundHandler, errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -30,8 +33,15 @@ if (!config.isTest) {
   );
 }
 
-// Health check endpoint
+// Health check endpoint (always unmetered for UptimeRobot / VPS health probes)
 app.use('/health', healthRoutes);
+
+// API Routes with general API rate limiting
+app.use('/api', apiLimiter);
+app.use('/api/links', linkRoutes);
+
+// Root Short-code Redirection Route
+app.use('/', redirectRoutes);
 
 // Unmatched routes 404 handler
 app.use(notFoundHandler);
