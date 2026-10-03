@@ -1,5 +1,6 @@
 const app = require('./app');
 const config = require('./config/env');
+const db = require('./db');
 const logger = require('./utils/logger');
 
 const server = app.listen(config.port, () => {
@@ -12,16 +13,23 @@ const server = app.listen(config.port, () => {
 /**
  * Graceful shutdown handler
  */
-function gracefulShutdown(signal) {
+async function gracefulShutdown(signal) {
   logger.info(`Received ${signal}. Starting graceful shutdown...`);
   
-  server.close((err) => {
+  server.close(async (err) => {
     if (err) {
       logger.error('Error during HTTP server shutdown', { error: err.message });
-      process.exit(1);
     }
-    logger.info('HTTP server closed successfully.');
-    process.exit(0);
+    
+    try {
+      await db.closePool();
+      logger.info('Database connection pool closed.');
+    } catch (dbErr) {
+      logger.error('Error closing database pool', { error: dbErr.message });
+    }
+
+    logger.info('Shutdown complete.');
+    process.exit(err ? 1 : 0);
   });
 
   // Force shutdown after timeout if graceful close hangs

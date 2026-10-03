@@ -1,16 +1,30 @@
 const request = require('supertest');
 const app = require('../src/app');
+const db = require('../src/db');
 
 describe('Health and Foundation Endpoints', () => {
   describe('GET /health', () => {
-    it('should return 200 OK with operational status and uptime', async () => {
+    it('should return 200 OK with connected database when DB is healthy', async () => {
+      jest.spyOn(db, 'checkConnection').mockResolvedValueOnce(true);
+
       const res = await request(app).get('/health');
 
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty('status', 'ok');
+      expect(res.body).toHaveProperty('database', 'connected');
       expect(res.body).toHaveProperty('uptime');
       expect(res.body).toHaveProperty('timestamp');
       expect(typeof res.body.uptime).toBe('number');
+    });
+
+    it('should return 503 Service Unavailable with disconnected database when DB is down', async () => {
+      jest.spyOn(db, 'checkConnection').mockResolvedValueOnce(false);
+
+      const res = await request(app).get('/health');
+
+      expect(res.status).toBe(503);
+      expect(res.body).toHaveProperty('status', 'ok');
+      expect(res.body).toHaveProperty('database', 'disconnected');
     });
   });
 
